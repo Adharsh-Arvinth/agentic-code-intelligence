@@ -43,6 +43,7 @@ def main():
                              help="Which experiments to run")
     eval_parser.add_argument("--config", type=str, default="configs/default.yaml", help="Config file")
     eval_parser.add_argument("--output", type=str, default="experiments/", help="Output directory")
+    eval_parser.add_argument("--max-queries", type=int, default=None, help="Limit number of queries")
 
     # MTEB eval command
     mteb_parser = subparsers.add_parser("mteb_eval", help="Run official MTEB AppsRetrieval evaluation")

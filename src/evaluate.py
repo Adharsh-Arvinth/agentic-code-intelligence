@@ -13,6 +13,7 @@ def run_evaluate(args):
 
     logger = setup_logger("evaluate")
     config = load_config(args.config if hasattr(args, 'config') else "configs/default.yaml")
+    config.max_queries = getattr(args, 'max_queries', None)
     output_dir = args.output if hasattr(args, 'output') else "experiments/"
     experiments = args.experiments if hasattr(args, 'experiments') else "all"
 
@@ -51,5 +52,6 @@ if __name__ == "__main__":
                          choices=["all", "lexical", "semantic", "hybrid", "hybrid_rerank"])
     parser.add_argument("--config", type=str, default="configs/default.yaml")
     parser.add_argument("--output", type=str, default="experiments/")
+    parser.add_argument("--max-queries", type=int, default=None, help="Limit number of queries")
     args = parser.parse_args()
     run_evaluate(args)

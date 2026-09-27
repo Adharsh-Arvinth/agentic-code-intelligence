@@ -67,6 +67,12 @@ class ExperimentRunner:
         corpus = test_data.get('corpus', {})
         qrels = test_data.get('qrels', {})
         
+        max_queries = getattr(self.config, 'max_queries', None)
+        if max_queries and len(queries) > max_queries:
+            queries = dict(list(queries.items())[:max_queries])
+            qrels = {qid: qrels[qid] for qid in queries if qid in qrels}
+            logger.info(f"Limited evaluation to {len(queries)} queries")
+        
         if not queries or not corpus:
             raise ValueError("No test data available. Ensure the dataset is accessible.")
         

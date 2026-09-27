@@ -16,7 +16,11 @@ model_cache/
 dist/
 build/
 *.egg-info/
-results/
+results/*
+!results/*.json
+!results/**/*.json
+experiments/*
+!experiments/*.json
 *.log
 .idea/
 .vscode/

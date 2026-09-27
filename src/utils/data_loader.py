@@ -29,12 +29,12 @@ def load_dataset_splits(cache_dir: str = 'data/cache') -> Dict[str, Any]:
         try:
             corpus_ds = load_dataset('mteb/AppsRetrieval', 'corpus', cache_dir=cache_dir, trust_remote_code=True)
             queries_ds = load_dataset('mteb/AppsRetrieval', 'queries', cache_dir=cache_dir, trust_remote_code=True)
-            default_ds = load_dataset('mteb/AppsRetrieval', 'default', cache_dir=cache_dir, trust_remote_code=True)
+            qrels_ds = load_dataset('mteb/AppsRetrieval', 'qrels', cache_dir=cache_dir, trust_remote_code=True)
         except Exception:
             # Fallback to CoIR namespace
             corpus_ds = load_dataset('CoIR-Retrieval/apps', 'corpus', cache_dir=cache_dir, trust_remote_code=True)
             queries_ds = load_dataset('CoIR-Retrieval/apps', 'queries', cache_dir=cache_dir, trust_remote_code=True)
-            default_ds = load_dataset('CoIR-Retrieval/apps', 'default', cache_dir=cache_dir, trust_remote_code=True)
+            qrels_ds = load_dataset('CoIR-Retrieval/apps', 'qrels', cache_dir=cache_dir, trust_remote_code=True)
     except Exception as e:
         logger.error(f"Failed to load dataset: {e}")
         logger.info("Attempting alternative loading method...")
@@ -74,10 +74,10 @@ def load_dataset_splits(cache_dir: str = 'data/cache') -> Dict[str, Any]:
         }
     
     # Parse qrels
-    if default_ds is not None:
-        for split_name in default_ds:
+    if qrels_ds is not None:
+        for split_name in qrels_ds:
             qrels = {}
-            for item in default_ds[split_name]:
+            for item in qrels_ds[split_name]:
                 qid = str(item.get('query-id', item.get('query_id', '')))
                 docid = str(item.get('corpus-id', item.get('corpus_id', '')))
                 score = int(item.get('score', 1))

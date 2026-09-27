@@ -20,7 +20,7 @@ class CodePreprocessor:
     def extract_imports(self, code: str) -> List[str]:
         if not code:
             return []
-        pattern = r'^\s*(?:import\s+[a-zA-Z0-9_\.,\s]+|from\s+[a-zA-Z0-9_\.]+\s+import\s+[a-zA-Z0-9_\.,\s\*]+)'
+        pattern = r'^\s*(?:import\s+[a-zA-Z0-9_\., \t]+|from\s+[a-zA-Z0-9_\.]+\s+import\s+[a-zA-Z0-9_\., \t\*]+)'
         imports = re.findall(pattern, code, re.MULTILINE)
         return [i.strip() for i in imports]
 

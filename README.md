@@ -1,0 +1,235 @@
+# Agentic Code Intelligence
+
+A production-quality **code retrieval system** that retrieves and ranks code snippets given natural-language queries. Built for the **CoIR AppsRetrieval** benchmark, evaluated using the official **MTEB** framework.
+
+## Problem
+
+Given a natural-language query (e.g., a competitive programming problem description) and a large collection of Python code solutions, the system must retrieve and rank the most relevant code snippets by relevance.
+
+This is a challenging text-to-code retrieval task where queries describe algorithmic puzzles while solutions are raw Python code — requiring models to bridge high-level programmatic intent with structural code logic.
+
+## Architecture
+
+```
+Natural Language Query
+        │
+        ▼
+┌─────────────────────────┐
+│  Query Preprocessing    │  Whitespace norm, identifier extraction
+└─────────┬───────────────┘
+          │
+          ▼
+┌─────────────────────────┐
+│  Stage 1: Semantic      │  Dense embedding retrieval (FAISS)
+│  Retrieval (Top-200)    │  Model: jina-embeddings-v2-base-code
+└─────────┬───────────────┘
+          │
+          ▼
+┌─────────────────────────┐
+│  Stage 2: Lexical       │  BM25 retrieval (Top-200)
+│  Retrieval              │  Code-aware tokenization
+└─────────┬───────────────┘
+          │
+          ▼
+┌─────────────────────────┐
+│  Stage 3: Hybrid Fusion │  Reciprocal Rank Fusion (RRF)
+│  (Top-100 candidates)   │  Configurable weights
+└─────────┬───────────────┘
+          │
+          ▼
+┌─────────────────────────┐
+│  Stage 4: Cross-Encoder │  Optional reranking of top
+│  Reranking (Top-10)     │  candidates for precision
+└─────────┬───────────────┘
+          │
+          ▼
+┌─────────────────────────┐
+│  Final Ranked Results   │  Scores, metadata, version info
+└─────────────────────────┘
+```
+
+## Features
+
+- **Semantic Retrieval**: Dense code embeddings via `jinaai/jina-embeddings-v2-base-code` (161M params, 8K context)
+- **Lexical Retrieval**: BM25 with code-aware tokenization (camelCase/snake_case splitting)
+- **Hybrid Ranking**: Reciprocal Rank Fusion (RRF) and weighted score fusion
+- **Cross-Encoder Reranking**: Optional second-stage reranking via `cross-encoder/ms-marco-MiniLM-L-6-v2`
+- **Version-Aware Retrieval**: Index and search across code versions
+- **CPU Support**: Full pipeline works on CPU with reasonable latency
+- **Caching**: Embeddings and indexes are cached to disk
+- **MTEB Integration**: Official evaluation via MTEB framework
+- **Experiment Framework**: Compare lexical-only, semantic-only, hybrid, and reranked approaches
+
+## Installation
+
+```bash
+git clone https://github.com/Adharsh-Arvinth/agentic-code-intelligence.git
+cd agentic-code-intelligence
+pip install -r requirements.txt
+```
+
+### Requirements
+
+- Python 3.10+
+- ~2GB disk space for model downloads
+- ~4GB RAM minimum (8GB recommended)
+- GPU optional but accelerates embedding generation
+
+## Dataset
+
+The system uses the **CoIR AppsRetrieval** dataset, loaded automatically from HuggingFace:
+
+- **Source**: Competitive programming problems (Codeforces, AtCoder, etc.)
+- **Task**: Text-to-Code retrieval
+- **Queries**: ~3,765 test problem descriptions
+- **Corpus**: ~8,765 Python code solutions
+- **Relevance**: Binary (1-to-1 query-solution mapping)
+
+The dataset is downloaded automatically on first run. No manual setup required.
+
+## Models
+
+| Component | Model | Parameters | Purpose |
+|-----------|-------|-----------|---------|
+| Embedding | `jinaai/jina-embeddings-v2-base-code` | 161M | Code-specialized dense retrieval |
+| Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` | 22.7M | Cross-encoder reranking |
+
+Models are downloaded automatically from HuggingFace on first use.
+
+## Usage
+
+### Build Indexes
+
+```bash
+py -m src index --config configs/default.yaml
+```
+
+### Run a Query
+
+```bash
+py -m src retrieve --query "Given an integer n, find the sum of all divisors of n" --top-k 5
+```
+
+### Run with Options
+
+```bash
+# Semantic-only retrieval
+py -m src retrieve --query "Sort an array using merge sort" --method semantic
+
+# Lexical-only retrieval
+py -m src retrieve --query "binary search implementation" --method lexical
+
+# Hybrid without reranking
+py -m src retrieve --query "Find palindrome substrings" --method hybrid --no-rerank
+
+# Version-specific retrieval
+py -m src retrieve --query "dynamic programming" --version v2
+```
+
+### Run MTEB Evaluation
+
+```bash
+py -m src mteb_eval --batch-size 64 --output results/
+```
+
+### Run Experiments
+
+```bash
+py -m src evaluate --experiments all --output experiments/
+```
+
+### Run Tests
+
+```bash
+py -m pytest tests/ -v
+```
+
+## Evaluation
+
+The system is evaluated using the official MTEB framework on the CoIR AppsRetrieval test split:
+
+- **NDCG@10**: Normalized Discounted Cumulative Gain at 10 (primary metric)
+- **MRR@10**: Mean Reciprocal Rank at 10
+- **Recall@K**: Proportion of relevant documents retrieved in top K
+
+Results are generated by actual model inference, not fabricated.
+
+## Performance
+
+> **Note**: Actual benchmark numbers are generated by running the MTEB evaluation.
+> Run `py -m src mteb_eval` to measure performance on your hardware.
+
+### Hardware Requirements
+
+| Mode | RAM | GPU | Latency (per query) |
+|------|-----|-----|-------------------|
+| CPU (indexing) | 4GB+ | None | ~35ms encoding |
+| CPU (retrieval) | 2GB+ | None | <500ms |
+| GPU (indexing) | 4GB+ | 4GB+ VRAM | ~5ms encoding |
+
+## Version Retrieval
+
+The system supports version-aware retrieval:
+
+```bash
+# Index a specific version
+py -m src index --version v2
+
+# Retrieve from a specific version
+py -m src retrieve --query "..." --version v2
+```
+
+Version metadata includes: repository, commit, timestamp, language, and snippet ID. Near-duplicate detection prevents version-identical snippets from dominating rankings.
+
+## Project Structure
+
+```
+agentic-code-intelligence/
+├── src/
+│   ├── __main__.py           # CLI dispatcher
+│   ├── index.py              # Index building
+│   ├── retrieve.py           # Query retrieval
+│   ├── evaluate.py           # Experiment runner
+│   ├── mteb_eval_cli.py      # MTEB evaluation
+│   ├── preprocessing/        # Query & code preprocessing
+│   ├── indexing/             # FAISS & BM25 indexes
+│   ├── retrieval/            # Semantic, lexical, hybrid retrieval
+│   ├── reranking/            # Cross-encoder reranking
+│   ├── versioning/           # Version-aware retrieval
+│   ├── evaluation/           # Metrics, MTEB wrapper, experiments
+│   └── utils/                # Config, data loading, logging
+├── tests/                    # Pytest test suite
+├── configs/                  # YAML configurations
+├── data/                     # Auto-downloaded datasets (gitignored)
+├── experiments/              # Experiment results
+├── results/                  # MTEB evaluation outputs
+├── requirements.txt
+├── AI_DISCLOSURE.md
+└── README.md
+```
+
+## Limitations
+
+- **AppsRetrieval difficulty**: This benchmark requires bridging algorithmic problem descriptions to code solutions. Lexical approaches alone perform poorly because queries and code have minimal vocabulary overlap.
+- **CPU speed**: Embedding generation for the full corpus (~8,765 docs) takes several minutes on CPU.
+- **Model size**: The default jina-code model (161M) provides a good balance of quality and speed. Larger models (e.g., SFR-Embedding-Code-2B at 2B params) achieve higher scores but require GPU.
+- **Single language**: AppsRetrieval contains Python solutions only. The architecture supports multi-language but is not benchmarked on other languages.
+
+## Reproduction
+
+```bash
+# 1. Clone and install
+git clone https://github.com/Adharsh-Arvinth/agentic-code-intelligence.git
+cd agentic-code-intelligence
+pip install -r requirements.txt
+
+# 2. Run MTEB evaluation (downloads dataset and model automatically)
+py -m src mteb_eval --output results/
+
+# 3. Check results
+cat results/*/AppsRetrieval.json
+```
+
+## License
+
+MIT

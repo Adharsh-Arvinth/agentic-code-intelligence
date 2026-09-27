@@ -1,0 +1,16 @@
+embedding_model: "Salesforce/SFR-Embedding-Code-2B_R"
+reranker_model: "BAAI/bge-reranker-v2-m3"
+semantic_top_k: 500
+lexical_top_k: 500
+fusion_top_k: 200
+rerank_top_k: 100
+final_top_k: 20
+fusion_strategy: "rrf"
+rrf_k: 60
+semantic_weight: 0.7
+lexical_weight: 0.3
+batch_size: 32
+device: "auto"
+cache_dir: "data/cache"
+index_dir: "data/indexes"
+results_dir: "results"

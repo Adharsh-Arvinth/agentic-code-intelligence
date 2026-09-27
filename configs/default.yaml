@@ -1,4 +1,4 @@
-embedding_model: "jinaai/jina-embeddings-v2-base-code"
+embedding_model: "BAAI/bge-small-en-v1.5"
 reranker_model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
 semantic_top_k: 200
 lexical_top_k: 200

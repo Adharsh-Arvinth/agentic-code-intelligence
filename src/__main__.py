@@ -34,6 +34,7 @@ def main():
     retrieve_parser.add_argument("--method", type=str, choices=["semantic", "lexical", "hybrid"],
                                  default="hybrid", help="Retrieval method")
     retrieve_parser.add_argument("--config", type=str, default="configs/default.yaml", help="Config file")
+    retrieve_parser.add_argument("--sample", type=int, default=None, help="Sample N documents for fast execution")
 
     # Evaluate command
     eval_parser = subparsers.add_parser("evaluate", help="Run evaluation experiments")

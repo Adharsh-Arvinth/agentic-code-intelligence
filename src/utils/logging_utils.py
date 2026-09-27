@@ -108,4 +108,4 @@ def format_results(
             log.info(f"  Code preview:")
             log.info(f"    {preview}")
         
-        log.info(f"  {'─' * 50}")
+        log.info(f"  {'-' * 50}")

@@ -35,12 +35,16 @@ def run_retrieve(args):
     with Timer("Dataset loading"):
         data = load_dataset_splits()
         corpus = data['test']['corpus']
+        sample = args.sample if (hasattr(args, 'sample') and args.sample) else None
+        if sample:
+            corpus = dict(list(corpus.items())[:sample])
+            logger.info(f"Sampled corpus down to {len(corpus)} documents")
 
     # Initialize pipeline
     with Timer("Pipeline initialization"):
         pipeline = RetrievalPipeline(config)
         # Build or load indexes
-        pipeline.build_index(corpus, version=version)
+        pipeline.build_index(corpus, version=f"{version}_sample_{sample}" if sample else version)
 
     # Run retrieval
     start_time = time.time()

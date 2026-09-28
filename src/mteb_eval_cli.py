@@ -97,24 +97,39 @@ def run_mteb_eval(args=None):
                 logger.info(f"Result: {task_result}")
                 logger.warning(f"Could not parse result details: {e}")
 
-    # Find and report the output JSON
+    # Find and report the output JSON, and ensure results/AppsRetrieval.json is updated
+    import shutil
+    latest_json_path = None
+    latest_mtime = -1.0
     for root, dirs, files in os.walk(output_dir):
         for f in files:
-            if f.endswith('.json') and 'Apps' in f:
+            if f == 'AppsRetrieval.json':
                 json_path = os.path.join(root, f)
-                logger.info(f"Results JSON: {json_path}")
-                try:
-                    with open(json_path, 'r') as jf:
-                        result_data = json.load(jf)
-                    # Extract key metrics from saved JSON
-                    if 'scores' in result_data:
-                        test_data = result_data['scores'].get('test', [{}])
-                        if test_data:
-                            s = test_data[0] if isinstance(test_data, list) else test_data
-                            logger.info(f"  NDCG@10: {s.get('ndcg_at_10', 'N/A')}")
-                            logger.info(f"  MRR@10:  {s.get('mrr_at_10', 'N/A')}")
-                except Exception:
-                    pass
+                mtime = os.path.getmtime(json_path)
+                if mtime > latest_mtime:
+                    latest_mtime = mtime
+                    latest_json_path = json_path
+
+    if latest_json_path:
+        logger.info(f"Results JSON: {latest_json_path}")
+        canonical_dest = os.path.join("results", "AppsRetrieval.json")
+        os.makedirs("results", exist_ok=True)
+        if os.path.abspath(latest_json_path) != os.path.abspath(canonical_dest):
+            shutil.copy2(latest_json_path, canonical_dest)
+            logger.info(f"Copied official MTEB result to: {canonical_dest}")
+        try:
+            with open(canonical_dest, 'r', encoding='utf-8') as jf:
+                result_data = json.load(jf)
+            if 'scores' in result_data:
+                test_data = result_data['scores'].get('test', [{}])
+                if test_data:
+                    s = test_data[0] if isinstance(test_data, list) else test_data
+                    logger.info(f"  NDCG@10:    {s.get('ndcg_at_10', 'N/A')}")
+                    logger.info(f"  MRR@10:     {s.get('mrr_at_10', 'N/A')}")
+                    logger.info(f"  Recall@10:  {s.get('recall_at_10', 'N/A')}")
+                    logger.info(f"  Recall@100: {s.get('recall_at_100', 'N/A')}")
+        except Exception as e:
+            logger.warning(f"Could not inspect canonical JSON: {e}")
 
     logger.info("=" * 60)
     logger.info("MTEB EVALUATION COMPLETE")

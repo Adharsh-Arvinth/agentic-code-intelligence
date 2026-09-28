@@ -63,9 +63,10 @@ class IndexManager:
 
     def _extract_texts(self, corpus: Dict[str, Any]) -> tuple:
         """
-        Extract document IDs and texts from corpus.
+        Extract document IDs and structured representation E texts from corpus.
         Corpus values can be dicts with 'title'/'text' keys or plain strings.
         """
+        from src.preprocessing.representations import format_doc_rep_e
         doc_ids = []
         doc_texts = []
         for doc_id, doc in corpus.items():
@@ -73,12 +74,9 @@ class IndexManager:
             if isinstance(doc, dict):
                 title = doc.get('title', '').strip()
                 text = doc.get('text', '').strip()
-                if title:
-                    doc_texts.append(f"{title}\n{text}")
-                else:
-                    doc_texts.append(text)
+                doc_texts.append(format_doc_rep_e(text, title=title, max_chars=1200))
             else:
-                doc_texts.append(str(doc))
+                doc_texts.append(format_doc_rep_e(str(doc), max_chars=1200))
         return doc_ids, doc_texts
 
     def build_all(self, corpus: Dict[str, Any], version: str = 'default'):

@@ -25,28 +25,19 @@ def load_dataset_splits(cache_dir: str = 'data/cache') -> Dict[str, Any]:
     logger.info("Loading CoIR AppsRetrieval dataset from HuggingFace...")
     
     try:
-        # Try loading from mteb namespace first
-        try:
-            corpus_ds = load_dataset('mteb/AppsRetrieval', 'corpus', cache_dir=cache_dir, trust_remote_code=True)
-            queries_ds = load_dataset('mteb/AppsRetrieval', 'queries', cache_dir=cache_dir, trust_remote_code=True)
-            qrels_ds = load_dataset('mteb/AppsRetrieval', 'qrels', cache_dir=cache_dir, trust_remote_code=True)
-        except Exception:
-            # Fallback to CoIR namespace
-            corpus_ds = load_dataset('CoIR-Retrieval/apps', 'corpus', cache_dir=cache_dir, trust_remote_code=True)
-            queries_ds = load_dataset('CoIR-Retrieval/apps', 'queries', cache_dir=cache_dir, trust_remote_code=True)
-            qrels_ds = load_dataset('CoIR-Retrieval/apps', 'qrels', cache_dir=cache_dir, trust_remote_code=True)
+        corpus_ds = load_dataset('CoIR-Retrieval/apps', 'corpus', cache_dir=cache_dir)
+        queries_ds = load_dataset('CoIR-Retrieval/apps', 'queries', cache_dir=cache_dir)
+        qrels_ds = load_dataset('CoIR-Retrieval/apps', 'default', cache_dir=cache_dir)
     except Exception as e:
-        logger.error(f"Failed to load dataset: {e}")
-        logger.info("Attempting alternative loading method...")
-        # Try loading as a single dataset
+        logger.warning(f"Primary CoIR-Retrieval/apps load failed ({e}), trying mteb/AppsRetrieval...")
         try:
-            ds = load_dataset('CoIR-Retrieval/apps', cache_dir=cache_dir, trust_remote_code=True)
-            return _parse_single_dataset(ds)
+            corpus_ds = load_dataset('mteb/AppsRetrieval', 'corpus', cache_dir=cache_dir)
+            queries_ds = load_dataset('mteb/AppsRetrieval', 'queries', cache_dir=cache_dir)
+            qrels_ds = load_dataset('mteb/AppsRetrieval', 'default', cache_dir=cache_dir)
         except Exception as e2:
             raise RuntimeError(
                 f"Could not load AppsRetrieval dataset. "
-                f"First error: {e}. Second error: {e2}. "
-                f"Make sure you have internet access and the 'datasets' package installed."
+                f"First error: {e}. Second error: {e2}."
             )
     
     # Parse corpus (shared across splits)
@@ -59,24 +50,19 @@ def load_dataset_splits(cache_dir: str = 'data/cache') -> Dict[str, Any]:
                 'text': str(item.get('text', ''))
             }
     
-    # Parse queries per split
-    result = {}
+    # Parse all queries into a master dictionary
+    all_queries = {}
     for split_name in queries_ds:
-        queries = {}
         for item in queries_ds[split_name]:
             qid = str(item.get('_id', item.get('id', '')))
-            queries[qid] = str(item.get('text', ''))
-        
-        result[split_name] = {
-            'queries': queries,
-            'corpus': corpus_dict,
-            'qrels': {}
-        }
+            all_queries[qid] = str(item.get('text', ''))
     
-    # Parse qrels
+    # Parse qrels per split ('train' has 5000, 'test' has 3765) and map corresponding queries
+    result = {}
     if qrels_ds is not None:
         for split_name in qrels_ds:
             qrels = {}
+            split_queries = {}
             for item in qrels_ds[split_name]:
                 qid = str(item.get('query-id', item.get('query_id', '')))
                 docid = str(item.get('corpus-id', item.get('corpus_id', '')))
@@ -84,14 +70,13 @@ def load_dataset_splits(cache_dir: str = 'data/cache') -> Dict[str, Any]:
                 if qid not in qrels:
                     qrels[qid] = {}
                 qrels[qid][docid] = score
-            if split_name in result:
-                result[split_name]['qrels'] = qrels
-            else:
-                result[split_name] = {
-                    'queries': {},
-                    'corpus': corpus_dict,
-                    'qrels': qrels
-                }
+                if qid in all_queries:
+                    split_queries[qid] = all_queries[qid]
+            result[split_name] = {
+                'queries': split_queries,
+                'corpus': corpus_dict,
+                'qrels': qrels
+            }
     
     # Ensure both train and test exist
     for split in ['train', 'test']:
@@ -108,39 +93,7 @@ def load_dataset_splits(cache_dir: str = 'data/cache') -> Dict[str, Any]:
     return result
 
 
-def _parse_single_dataset(ds) -> Dict[str, Any]:
-    """Parse a single dataset format (fallback)."""
-    corpus_dict = {}
-    result = {}
-    
-    for split_name in ds:
-        queries = {}
-        qrels = {}
-        for item in ds[split_name]:
-            # Try to extract query, corpus, and qrels from the item
-            qid = str(item.get('query-id', item.get('_id', '')))
-            query_text = str(item.get('query', item.get('text', '')))
-            doc_id = str(item.get('corpus-id', ''))
-            doc_text = str(item.get('corpus-text', item.get('positive', '')))
-            
-            if query_text:
-                queries[qid] = query_text
-            if doc_id and doc_text:
-                corpus_dict[doc_id] = {'title': '', 'text': doc_text}
-                if qid not in qrels:
-                    qrels[qid] = {}
-                qrels[qid][doc_id] = 1
-        
-        result[split_name] = {
-            'queries': queries,
-            'corpus': corpus_dict,
-            'qrels': qrels
-        }
-    
-    return result
-
-
-def load_test_split(cache_dir: str = 'data/cache'):
+def load_test_split(cache_dir: str = 'data/cache') -> Tuple[Dict[str, str], Dict[str, Any], Dict[str, Dict[str, int]]]:
     """Convenience function to load only the test split."""
     data = load_dataset_splits(cache_dir=cache_dir)
     test_data = data.get('test', {})
@@ -149,3 +102,17 @@ def load_test_split(cache_dir: str = 'data/cache'):
         test_data.get('corpus', {}),
         test_data.get('qrels', {})
     )
+
+
+def load_val_split(max_queries: int = 500, cache_dir: str = 'data/cache') -> Tuple[Dict[str, str], Dict[str, Any], Dict[str, Dict[str, int]]]:
+    """Load validation subset from the train split (strictly disjoint from test split)."""
+    data = load_dataset_splits(cache_dir=cache_dir)
+    train_data = data.get('train', {})
+    queries = train_data.get('queries', {})
+    corpus = train_data.get('corpus', {})
+    qrels = train_data.get('qrels', {})
+    if max_queries and len(queries) > max_queries:
+        qids = sorted(list(queries.keys()))[:max_queries]
+        queries = {q: queries[q] for q in qids}
+        qrels = {q: qrels[q] for q in qids if q in qrels}
+    return queries, corpus, qrels

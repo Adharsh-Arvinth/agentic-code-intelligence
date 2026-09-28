@@ -13,16 +13,18 @@ class EmbeddingIndex:
         self.model = SentenceTransformer(model_name, device=device, cache_folder=cache_dir, trust_remote_code=True)
         self.index = None
 
-    def encode_documents(self, documents: List[str], batch_size: int = 32, show_progress: bool = True) -> np.ndarray:
-        embeddings = self.model.encode(
-            documents, batch_size=batch_size, show_progress_bar=show_progress,
-            convert_to_numpy=True, normalize_embeddings=True
-        )
-        return embeddings.astype(np.float32)
+    def encode_documents(self, documents: List[str], batch_size: int = 128, show_progress: bool = True) -> np.ndarray:
+        from src.evaluation.mteb_wrapper import PersistentEmbeddingCache
+        cache = PersistentEmbeddingCache(self.model_name, 256, os.path.join(self.cache_dir, "emb_cache"))
+        embs = cache.encode_with_cache(self.model, documents, batch_size=batch_size, max_len_override=256)
+        cache.save()
+        return embs.astype(np.float32)
 
-    def encode_queries(self, queries: List[str], batch_size: int = 32) -> np.ndarray:
+    def encode_queries(self, queries: List[str], batch_size: int = 128) -> np.ndarray:
+        from src.preprocessing.representations import format_query_smart
+        formatted = [format_query_smart(q, self.model_name) for q in queries]
         embeddings = self.model.encode(
-            queries, batch_size=batch_size, show_progress_bar=False,
+            formatted, batch_size=batch_size, show_progress_bar=False,
             convert_to_numpy=True, normalize_embeddings=True
         )
         return embeddings.astype(np.float32)

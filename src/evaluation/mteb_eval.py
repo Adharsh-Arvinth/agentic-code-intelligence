@@ -10,11 +10,11 @@ logger = logging.getLogger(__name__)
 
 def main():
     parser = argparse.ArgumentParser(description="Run MTEB evaluation for code retrieval models")
-    parser.add_argument("--model", type=str, default="jinaai/jina-embeddings-v2-base-code",
+    parser.add_argument("--model", type=str, default="BAAI/bge-small-en-v1.5",
                         help="HuggingFace model name")
     parser.add_argument("--output_path", type=str, default="results/mteb_results",
                         help="Directory to save evaluation results")
-    parser.add_argument("--batch_size", type=int, default=32, help="Batch size for encoding")
+    parser.add_argument("--batch_size", type=int, default=128, help="Batch size for encoding")
     args = parser.parse_args()
 
     try:

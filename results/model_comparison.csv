@@ -1,0 +1,10 @@
+experiment_id,split,model,query_formatting,doc_formatting,pooling,normalization,max_seq_length,batch_size,device,ndcg_at_10,mrr_at_10,recall_at_10,recall_at_100,inference_time_s
+1_baseline_raw,val_dev (250 train held-out),BAAI/bge-small-en-v1.5,original (no prefix),A: raw code,CLS,L2,512,128,cpu,0.12937,0.12037,0.168,0.26,0.05
+2_bge_query_instruction,val_dev (250 train held-out),BAAI/bge-small-en-v1.5,BGE official prefix,A: raw code,CLS,L2,256,128,cpu,0.13647,0.1229,0.188,0.268,0.04
+3_doc_rep_B,val_dev (250 train held-out),BAAI/bge-small-en-v1.5,smart window + instruction + I/O tags,B: signature + code,CLS (dual-view),L2,256,128,cpu,0.12968,0.12352,0.16,0.26,2.92
+3_doc_rep_C,val_dev (250 train held-out),BAAI/bge-small-en-v1.5,smart window + instruction + I/O tags,C: comments + code,CLS (dual-view),L2,256,128,cpu,0.11324,0.10214,0.156,0.228,2.89
+3_doc_rep_D,val_dev (250 train held-out),BAAI/bge-small-en-v1.5,smart window + instruction + I/O tags,D: identifiers + code,CLS (dual-view),L2,256,128,cpu,0.14191,0.13236,0.18,0.296,2.88
+3_doc_rep_E,val_dev (250 train held-out),BAAI/bge-small-en-v1.5,smart window + instruction + I/O tags,E: structured summary + cleaned code,CLS (dual-view),L2,256,128,cpu,0.13921,0.12948,0.18,0.268,0.04
+4_cross_modal_aligned_biencoder,val_dev (250 train held-out),BAAI/bge-small-en-v1.5 + CrossModalAligner,smart window + instruction + CrossModal,E: structured + CrossModal,CLS + Residual MLP,L2,256,128,cpu,0.13863,0.12656,0.184,0.26,0.1
+5_hybrid_dense_bm25_structural,val_dev (250 train held-out),BAAI/bge-small-en-v1.5 + CrossModal + BM25 + StructIO,smart window + instruction + I/O tags,E: structured + BM25 code tokens,CLS + RRF Hybrid,L2 + RRF,256,128,cpu,0.14145,0.13237,0.18,0.288,0.29
+6_full_agentic_hybrid_execution_verified,val_dev (250 train held-out),Agentic Code Intelligence (BGE + CrossModal + BM25 + ExecutionVerifier),smart window + instruction + Example I/O extraction,E: structured + AST-Guarded Bytecode Verification,CLS + RRF + Execution Match,L2 + Entropy-Weighted Verification,256,128,cpu,0.2832,0.27492,0.316,0.392,7.32

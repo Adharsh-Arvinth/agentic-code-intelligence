@@ -219,8 +219,8 @@ Output:
 - [x] **Test Suite**: 42 passing unit test cases in `tests/`
 - [x] **MTEB Benchmark Output**: Generated and saved in `results/`
 - [x] **SDK / API**: Modular Python package (`src.pipeline.RetrievalPipeline`)
-- [ ] **Presentation**: (To be created manually)
-- [ ] **Video**: (To be created manually)
+- [x] **Presentation**: Attached 
+- [x] **Video**: Attached
 - [x] **APK**: Not Applicable (Backend/CLI Python code retrieval engine)
 
 ---

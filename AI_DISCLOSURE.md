@@ -31,5 +31,5 @@
 
 ## 5. Human Validation & Empirical Verification
 - **Empirical Integrity**: All reported metrics in `results/AppsRetrieval.json`, `results/benchmark_summary.json`, `results/model_comparison.json`, and `README.md` are produced by actual local execution on CPU (`mteb==2.21.8`) and verified directly from generated JSON artifacts.
-- **Strict Separation of Evaluations**: Official MTEB `AppsRetrieval` `test` split metrics (`NDCG@10 = 0.25591`, `MRR@10 = 0.25233` over `3,765` test queries) are documented separately from the 250-query held-out validation ablation study (`NDCG@10 = 0.28320`, `MRR@10 = 0.27492`).
-- **Automated Verification**: Validated via `44/44` passing `pytest` unit tests covering evaluation metrics, preprocessing, hybrid fusion, version-aware indexing/retrieval, and MTEB protocol compliance.
+- **Strict Separation of Evaluations**: Official MTEB `AppsRetrieval` `test` split metrics (`NDCG@10 = 0.25591`, `MRR@10 = 0.252327`, `Recall@10 = 0.26746`, `Recall@100 = 0.33732` over `3,765` test queries and `8,765` corpus documents) are documented strictly separately from the 250-query held-out validation ablation study (`6_full_agentic_hybrid_execution_verified`: `NDCG@10 = 0.27920`, `MRR@10 = 0.27099`, `Recall@10 = 0.312`, `Recall@100 = 0.392`).
+- **Automated Verification**: Validated via `44/44` passing `pytest` unit tests covering evaluation metrics, preprocessing, hybrid fusion, version-aware indexing/retrieval (`v1.0` / `v2.0` registration, metadata persistence, version filtering, and deduplication), and MTEB protocol compliance.

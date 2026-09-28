@@ -372,3 +372,32 @@ python scripts/run_validation_ablation.py
 # 4. Run the official MTEB AppsRetrieval test evaluation (3,765 queries)
 python -m src mteb_eval --model "BAAI/bge-small-en-v1.5" --batch-size 128 --device cpu --output results
 ```
+
+---
+
+## AI Disclosure
+
+Full details on AI-assisted development, pretrained models (`BAAI/bge-small-en-v1.5`, `cross-encoder/ms-marco-MiniLM-L-6-v2`), dataset partitioning (`CoIR AppsRetrieval` `train` vs. `test`), and human empirical verification are documented in [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md).
+
+---
+
+## Hackathon Submission Checklist
+
+- [x] Source Code
+- [ ] Presentation
+- [ ] Demo Video
+- [x] AI Disclosure ([`AI_DISCLOSURE.md`](AI_DISCLOSURE.md))
+- [x] README ([`README.md`](README.md))
+- [ ] APK/SDK — Not applicable — this project is a Python-based code intelligence/retrieval system.
+- [x] GitHub repository (`https://github.com/Adharsh-Arvinth/agentic-code-intelligence`)
+- [x] Tests (`44 passed` via `python -m pytest tests/ -v`)
+- [x] Evaluation results ([`results/AppsRetrieval.json`](results/AppsRetrieval.json), [`results/benchmark_summary.json`](results/benchmark_summary.json), [`results/model_comparison.json`](results/model_comparison.json), [`results/model_comparison.csv`](results/model_comparison.csv))
+- [x] Example execution (`python -m src.retrieve --device cpu --query "..."`)
+- [x] TAG / release (`v1.0.0`)
+
+---
+
+## License
+
+Released under the MIT License for the Samsung PRISM Gen AI Hackathon 3.0.
+

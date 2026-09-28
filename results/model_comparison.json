@@ -48,7 +48,7 @@
     "mrr_at_10": 0.12352,
     "recall_at_10": 0.16,
     "recall_at_100": 0.26,
-    "inference_time_s": 2.91
+    "inference_time_s": 2.87
   },
   {
     "experiment_id": "3_doc_rep_C",
@@ -65,7 +65,7 @@
     "mrr_at_10": 0.10214,
     "recall_at_10": 0.156,
     "recall_at_100": 0.228,
-    "inference_time_s": 2.9
+    "inference_time_s": 2.88
   },
   {
     "experiment_id": "3_doc_rep_D",
@@ -82,7 +82,7 @@
     "mrr_at_10": 0.13236,
     "recall_at_10": 0.18,
     "recall_at_100": 0.296,
-    "inference_time_s": 2.89
+    "inference_time_s": 2.87
   },
   {
     "experiment_id": "3_doc_rep_E",
@@ -116,7 +116,7 @@
     "mrr_at_10": 0.12656,
     "recall_at_10": 0.184,
     "recall_at_100": 0.26,
-    "inference_time_s": 0.1
+    "inference_time_s": 0.09
   },
   {
     "experiment_id": "5_hybrid_dense_bm25_structural",
@@ -133,7 +133,7 @@
     "mrr_at_10": 0.13237,
     "recall_at_10": 0.18,
     "recall_at_100": 0.288,
-    "inference_time_s": 0.29
+    "inference_time_s": 0.26
   },
   {
     "experiment_id": "6_full_agentic_hybrid_execution_verified",
@@ -150,6 +150,6 @@
     "mrr_at_10": 0.27099,
     "recall_at_10": 0.312,
     "recall_at_100": 0.392,
-    "inference_time_s": 9.45
+    "inference_time_s": 9.14
   }
 ]

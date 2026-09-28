@@ -18,6 +18,7 @@ build/
 *.egg-info/
 results/*
 !results/*.json
+!results/*.csv
 !results/**/*.json
 experiments/*
 !experiments/*.json

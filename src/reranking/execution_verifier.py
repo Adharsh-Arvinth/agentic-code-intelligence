@@ -562,12 +562,14 @@ class ExecutionVerifier:
         try:
             sys.stdin = stdin_mock
             sys.stdout = stdout_mock
-            exec(code_obj, env)
-            for cb_func, cb_args, cb_kwargs in atexit_mock.callbacks:
-                try:
-                    cb_func(*cb_args, **cb_kwargs)
-                except Exception:
-                    pass
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                exec(code_obj, env)
+                for cb_func, cb_args, cb_kwargs in atexit_mock.callbacks:
+                    try:
+                        cb_func(*cb_args, **cb_kwargs)
+                    except Exception:
+                        pass
         except SystemExit:
             for cb_func, cb_args, cb_kwargs in atexit_mock.callbacks:
                 try:

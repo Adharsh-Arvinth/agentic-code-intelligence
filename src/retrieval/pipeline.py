@@ -16,12 +16,16 @@ class RetrievalPipeline:
     """Multi-stage retrieval pipeline: semantic → lexical → fusion → reranking."""
     
     def __init__(self, config):
+        from src.versioning.version_manager import VersionManager
         self.config = config
         self.index_manager = IndexManager(config)
+        self.version_manager = VersionManager(base_dir=self.index_manager.base_dir)
         self.semantic_retriever: Optional[SemanticRetriever] = None
         self.lexical_retriever: Optional[LexicalRetriever] = None
         self.hybrid_retriever: Optional[HybridRetriever] = None
         self.reranker = None
+        self._corpus_cache: Dict[str, Dict[str, Any]] = {}
+        self._loaded_version: Optional[str] = None
         self._initialized = False
     
     def _get_config_val(self, key: str, default=None):
@@ -29,9 +33,24 @@ class RetrievalPipeline:
             return self.config.get(key, default)
         return getattr(self.config, key, default)
     
-    def build_index(self, corpus: Dict[str, Any], version: str = 'default'):
-        """Build or load indexes for the corpus."""
-        self.index_manager.build_all(corpus, version=version)
+    def build_index(self, corpus: Dict[str, Any], version: str = 'default', metadata: Optional[Dict[str, Any]] = None, force: bool = False):
+        """Build or load indexes for the corpus and register version metadata."""
+        self._corpus_cache[version] = corpus
+        if force:
+            self.index_manager.rebuild(corpus, version=version)
+        else:
+            self.index_manager.build_all(corpus, version=version)
+        
+        ver_meta = {
+            'version': version,
+            'num_documents': len(corpus),
+            'embedding_model': self._get_config_val('embedding_model', 'BAAI/bge-small-en-v1.5'),
+            'language': 'python',
+        }
+        if metadata:
+            ver_meta.update(metadata)
+        self.version_manager.register_version(version, ver_meta)
+        self._loaded_version = version
         self._init_retrievers()
     
     def _init_retrievers(self):
@@ -67,15 +86,16 @@ class RetrievalPipeline:
         self._initialized = True
     
     def _ensure_loaded(self, version: str = 'default'):
-        """Ensure indexes are loaded."""
-        if not self._initialized:
+        """Ensure indexes are loaded for the requested version."""
+        if not self._initialized or self._loaded_version != version:
             if self.index_manager.is_indexed(version):
                 self.index_manager.load_all(version)
+                self._loaded_version = version
                 self._init_retrievers()
             else:
                 raise RuntimeError(
                     f"No indexes found for version '{version}'. "
-                    f"Run 'python -m src index' first."
+                    f"Run 'python -m src index --version {version}' first."
                 )
     
     def retrieve(
@@ -97,15 +117,15 @@ class RetrievalPipeline:
         
         if method == 'semantic':
             sem_top_k = self._get_config_val('semantic_top_k', 200)
-            results = self.semantic_retriever.retrieve(query, min(top_k, sem_top_k))
+            results = self.semantic_retriever.retrieve(query, min( max(top_k, 50), sem_top_k))
             
         elif method == 'lexical':
             lex_top_k = self._get_config_val('lexical_top_k', 200)
-            results = self.lexical_retriever.retrieve(query, min(top_k, lex_top_k))
+            results = self.lexical_retriever.retrieve(query, min(max(top_k, 50), lex_top_k))
             
         elif method == 'hybrid':
             fusion_top_k = self._get_config_val('fusion_top_k', 100)
-            results = self.hybrid_retriever.retrieve(query, fusion_top_k)
+            results = self.hybrid_retriever.retrieve(query, max(top_k, fusion_top_k))
         else:
             raise ValueError(f"Unknown method: {method}. Use 'semantic', 'lexical', or 'hybrid'.")
         
@@ -129,14 +149,43 @@ class RetrievalPipeline:
                     self.reranker = CrossEncoderReranker(model_name=reranker_model, device=device)
                 
                 rerank_top_k = self._get_config_val('rerank_top_k', 50)
-                # Need to add text to candidates for reranker - we'll use doc_id as placeholder
-                # In practice, the corpus text should be passed in
-                results = results[:rerank_top_k]
+                corpus_for_ver = self._corpus_cache.get(version, {})
+                candidates_for_rerank = []
+                for r in results[:rerank_top_k]:
+                    did = r['doc_id']
+                    doc_obj = corpus_for_ver.get(did, {})
+                    txt = doc_obj.get('text', '') if isinstance(doc_obj, dict) else str(doc_obj)
+                    r_copy = dict(r)
+                    r_copy['text'] = txt or did
+                    candidates_for_rerank.append(r_copy)
+                reranked = self.reranker.rerank(query, candidates_for_rerank, top_k=rerank_top_k)
+                results = reranked + results[rerank_top_k:]
                 latencies['reranking'] = time.time() - rerank_start
                 logger.info(f"Reranking: {rerank_top_k} candidates in {latencies['reranking']:.3f}s")
             except Exception as e:
                 logger.warning(f"Reranking failed: {e}. Using unreranked results.")
         
+        # Tag version, filter, and deduplicate via VersionManager
+        ver_meta = self.version_manager.get_version_metadata(version) or {
+            'version': version,
+            'embedding_model': self._get_config_val('embedding_model', 'BAAI/bge-small-en-v1.5'),
+        }
+        corpus_for_ver = self._corpus_cache.get(version, {})
+        for r in results:
+            r['version'] = version
+            did = r.get('doc_id', '')
+            if did in corpus_for_ver:
+                doc_obj = corpus_for_ver[did]
+                r['code'] = doc_obj.get('text', '') if isinstance(doc_obj, dict) else str(doc_obj)
+            r['metadata'] = {
+                'version': version,
+                'method': method,
+                'embedding_model': ver_meta.get('embedding_model', 'BAAI/bge-small-en-v1.5'),
+            }
+
+        results = self.version_manager.filter_results_by_version(results, version)
+        results = self.version_manager.deduplicate_results(results, version_priority=version)
+
         # Final top-k
         final_top_k = min(top_k, len(results))
         results = results[:final_top_k]

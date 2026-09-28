@@ -14,6 +14,8 @@ def run_retrieve(args):
 
     logger = setup_logger("retrieve")
     config = load_config(args.config if hasattr(args, 'config') else "configs/default.yaml")
+    if hasattr(args, 'device') and args.device:
+        config.device = args.device
 
     query = args.query
     top_k = args.top_k if hasattr(args, 'top_k') else 10
@@ -28,6 +30,7 @@ def run_retrieve(args):
     logger.info(f"Method: {method}")
     logger.info(f"Top-K: {top_k}")
     logger.info(f"Version: {version}")
+    logger.info(f"Device: {config.get_device()}")
     logger.info(f"Reranking: {'enabled' if use_reranker else 'disabled'}")
     logger.info("-" * 60)
 
@@ -41,17 +44,17 @@ def run_retrieve(args):
             logger.info(f"Sampled corpus down to {len(corpus)} documents")
 
     # Initialize pipeline
+    target_version = f"{version}_sample_{sample}" if sample else version
     with Timer("Pipeline initialization"):
         pipeline = RetrievalPipeline(config)
-        # Build or load indexes
-        pipeline.build_index(corpus, version=f"{version}_sample_{sample}" if sample else version)
+        pipeline.build_index(corpus, version=target_version)
 
     # Run retrieval
     start_time = time.time()
     results = pipeline.retrieve(
         query=query,
         top_k=top_k,
-        version=version,
+        version=target_version,
         use_reranker=use_reranker,
         method=method
     )
@@ -75,6 +78,8 @@ if __name__ == "__main__":
     parser.add_argument("--no-rerank", action="store_true", help="Disable reranking")
     parser.add_argument("--method", type=str, choices=["semantic", "lexical", "hybrid"],
                          default="hybrid", help="Retrieval method")
+    parser.add_argument("--device", type=str, default="cpu", help="Device (cpu, cuda, auto)")
+    parser.add_argument("--sample", type=int, default=None, help="Sample N documents for fast execution")
     parser.add_argument("--config", type=str, default="configs/default.yaml", help="Config file")
     args = parser.parse_args()
     run_retrieve(args)

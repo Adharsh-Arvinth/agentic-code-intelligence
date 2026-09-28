@@ -48,7 +48,7 @@
     "mrr_at_10": 0.12352,
     "recall_at_10": 0.16,
     "recall_at_100": 0.26,
-    "inference_time_s": 2.92
+    "inference_time_s": 2.91
   },
   {
     "experiment_id": "3_doc_rep_C",
@@ -65,7 +65,7 @@
     "mrr_at_10": 0.10214,
     "recall_at_10": 0.156,
     "recall_at_100": 0.228,
-    "inference_time_s": 2.89
+    "inference_time_s": 2.9
   },
   {
     "experiment_id": "3_doc_rep_D",
@@ -82,7 +82,7 @@
     "mrr_at_10": 0.13236,
     "recall_at_10": 0.18,
     "recall_at_100": 0.296,
-    "inference_time_s": 2.88
+    "inference_time_s": 2.89
   },
   {
     "experiment_id": "3_doc_rep_E",
@@ -146,10 +146,10 @@
     "max_seq_length": 256,
     "batch_size": 128,
     "device": "cpu",
-    "ndcg_at_10": 0.2832,
-    "mrr_at_10": 0.27492,
-    "recall_at_10": 0.316,
+    "ndcg_at_10": 0.2792,
+    "mrr_at_10": 0.27099,
+    "recall_at_10": 0.312,
     "recall_at_100": 0.392,
-    "inference_time_s": 7.32
+    "inference_time_s": 9.45
   }
 ]

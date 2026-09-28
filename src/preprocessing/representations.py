@@ -5,6 +5,7 @@ for CoIR AppsRetrieval Text-to-Code Retrieval.
 
 import ast
 import re
+import warnings
 from typing import Dict, List, Tuple, Optional
 
 
@@ -40,7 +41,9 @@ def strip_cp_boilerplate(code: str) -> str:
     # Remove unused standard CP helper one-liner defs if main() or loop exists
     if "def main(" in text or "for " in text:
         try:
-            tree = ast.parse(text)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", SyntaxWarning)
+                tree = ast.parse(text)
             # Find all called function names in the module
             called_names = {
                 node.func.id

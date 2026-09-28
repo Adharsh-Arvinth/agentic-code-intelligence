@@ -2,11 +2,10 @@
   "benchmark": "MTEB AppsRetrieval (CoIR-Retrieval/apps)",
   "mteb_version": "2.21.8",
   "dataset_revision": "f22508f96b7a36c2415181ed8bb76f76e04ae2d5",
-  "test_split_size": {
+  "official_mteb_test_evaluation": {
+    "evaluation_type": "Official MTEB AppsRetrieval Test Split (eval_splits=['test'])",
     "num_queries": 3765,
-    "num_corpus_documents": 8765
-  },
-  "baseline_vs_final_test": {
+    "num_corpus_documents": 8765,
     "baseline_raw_bge_small": {
       "ndcg_at_1": 0.0324,
       "ndcg_at_10": 0.05142,
@@ -24,8 +23,7 @@
       "recall_at_10": 0.26746,
       "recall_at_100": 0.33732,
       "recall_at_1000": 0.54714,
-      "map_at_10": 0.25233,
-      "evaluation_time_seconds": 125.31
+      "map_at_10": 0.25233
     },
     "relative_improvement": {
       "ndcg_at_1": "+659.1% (7.59x)",
@@ -35,78 +33,83 @@
       "recall_at_100": "+57.4% (1.57x)"
     }
   },
-  "validation_ablation_matrix_250_queries": [
-    {
-      "experiment": "1_baseline_raw",
-      "description": "Raw BAAI/bge-small-en-v1.5 (no query instruction prefix, raw code Rep A)",
-      "ndcg_at_10": 0.12937,
-      "mrr_at_10": 0.12037,
-      "recall_at_10": 0.168,
-      "recall_at_100": 0.26
-    },
-    {
-      "experiment": "2_bge_query_instruction",
-      "description": "BGE Retrieval Query Instruction Prefix + Smart I/O Window Preservation",
-      "ndcg_at_10": 0.13647,
-      "mrr_at_10": 0.1229,
-      "recall_at_10": 0.188,
-      "recall_at_100": 0.268
-    },
-    {
-      "experiment": "3_doc_rep_B",
-      "description": "Document Representation B (Function/Class Signatures + Imports + Code)",
-      "ndcg_at_10": 0.12968,
-      "mrr_at_10": 0.12352,
-      "recall_at_10": 0.16,
-      "recall_at_100": 0.26
-    },
-    {
-      "experiment": "3_doc_rep_C",
-      "description": "Document Representation C (Comments + Docstrings + Code)",
-      "ndcg_at_10": 0.11324,
-      "mrr_at_10": 0.10214,
-      "recall_at_10": 0.156,
-      "recall_at_100": 0.228
-    },
-    {
-      "experiment": "3_doc_rep_D",
-      "description": "Document Representation D (Normalized Identifiers + Algorithmic Tags + Code)",
-      "ndcg_at_10": 0.14191,
-      "mrr_at_10": 0.13236,
-      "recall_at_10": 0.18,
-      "recall_at_100": 0.296
-    },
-    {
-      "experiment": "3_doc_rep_E",
-      "description": "Document Representation E (Structured Algorithmic Summary + Boilerplate-Stripped Code)",
-      "ndcg_at_10": 0.13921,
-      "mrr_at_10": 0.12948,
-      "recall_at_10": 0.18,
-      "recall_at_100": 0.268
-    },
-    {
-      "experiment": "4_cross_modal_aligned_biencoder",
-      "description": "Closed-Form Ridge Cross-Modal Aligner (trained strictly on train[0:2000]) + Dual-View Code Indexing",
-      "ndcg_at_10": 0.13863,
-      "mrr_at_10": 0.12656,
-      "recall_at_10": 0.184,
-      "recall_at_100": 0.26
-    },
-    {
-      "experiment": "5_hybrid_dense_bm25_structural",
-      "description": "Hybrid Dense + Vectorized Sparse CSR BM25 Lexical Fusion on Structured Representations",
-      "ndcg_at_10": 0.14145,
-      "mrr_at_10": 0.13237,
-      "recall_at_10": 0.18,
-      "recall_at_100": 0.288
-    },
-    {
-      "experiment": "6_full_agentic_hybrid_execution_verified",
-      "description": "Full System: Smart Query + Doc Rep E/D + Cross-Modal Aligner + Hybrid BM25 + AST-Guarded Execution Verifier",
-      "ndcg_at_10": 0.2832,
-      "mrr_at_10": 0.27492,
-      "recall_at_10": 0.316,
-      "recall_at_100": 0.392
-    }
-  ]
+  "custom_validation_ablation_experiment": {
+    "evaluation_type": "Custom Validation / Ablation Experiment on Held-Out Train Subset (val_dev = train[2000:2250], strictly disjoint from test split)",
+    "num_validation_queries": 250,
+    "num_corpus_documents": 8765,
+    "experiments": [
+      {
+        "experiment": "1_baseline_raw",
+        "description": "Raw BAAI/bge-small-en-v1.5 (no query instruction prefix, raw code Rep A)",
+        "ndcg_at_10": 0.12937,
+        "mrr_at_10": 0.12037,
+        "recall_at_10": 0.168,
+        "recall_at_100": 0.26
+      },
+      {
+        "experiment": "2_bge_query_instruction",
+        "description": "BGE Retrieval Query Instruction Prefix + Smart I/O Window Preservation",
+        "ndcg_at_10": 0.13647,
+        "mrr_at_10": 0.1229,
+        "recall_at_10": 0.188,
+        "recall_at_100": 0.268
+      },
+      {
+        "experiment": "3_doc_rep_B",
+        "description": "Document Representation B (Function/Class Signatures + Imports + Code)",
+        "ndcg_at_10": 0.12968,
+        "mrr_at_10": 0.12352,
+        "recall_at_10": 0.16,
+        "recall_at_100": 0.26
+      },
+      {
+        "experiment": "3_doc_rep_C",
+        "description": "Document Representation C (Comments + Docstrings + Code)",
+        "ndcg_at_10": 0.11324,
+        "mrr_at_10": 0.10214,
+        "recall_at_10": 0.156,
+        "recall_at_100": 0.228
+      },
+      {
+        "experiment": "3_doc_rep_D",
+        "description": "Document Representation D (Normalized Identifiers + Algorithmic Tags + Code)",
+        "ndcg_at_10": 0.14191,
+        "mrr_at_10": 0.13236,
+        "recall_at_10": 0.18,
+        "recall_at_100": 0.296
+      },
+      {
+        "experiment": "3_doc_rep_E",
+        "description": "Document Representation E (Structured Algorithmic Summary + Boilerplate-Stripped Code)",
+        "ndcg_at_10": 0.13921,
+        "mrr_at_10": 0.12948,
+        "recall_at_10": 0.18,
+        "recall_at_100": 0.268
+      },
+      {
+        "experiment": "4_cross_modal_aligned_biencoder",
+        "description": "Closed-Form Ridge Cross-Modal Aligner (trained strictly on train[0:2000]) + Dual-View Code Indexing",
+        "ndcg_at_10": 0.13863,
+        "mrr_at_10": 0.12656,
+        "recall_at_10": 0.184,
+        "recall_at_100": 0.26
+      },
+      {
+        "experiment": "5_hybrid_dense_bm25_structural",
+        "description": "Hybrid Dense + Vectorized Sparse CSR BM25 Lexical Fusion on Structured Representations",
+        "ndcg_at_10": 0.14145,
+        "mrr_at_10": 0.13237,
+        "recall_at_10": 0.18,
+        "recall_at_100": 0.288
+      },
+      {
+        "experiment": "6_full_agentic_hybrid_execution_verified",
+        "description": "Full System on Validation Split: Smart Query + Doc Rep E/D + Cross-Modal Aligner + Hybrid BM25 + AST-Guarded Execution Verifier",
+        "ndcg_at_10": 0.2792,
+        "mrr_at_10": 0.27099,
+        "recall_at_10": 0.312,
+        "recall_at_100": 0.392
+      }
+    ]
+  }
 }

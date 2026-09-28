@@ -14,6 +14,12 @@ class EmbeddingIndex:
         self.index = None
 
     def encode_documents(self, documents: List[str], batch_size: int = 128, show_progress: bool = True) -> np.ndarray:
+        if len(documents) < 100:
+            embeddings = self.model.encode(
+                documents, batch_size=batch_size, show_progress_bar=False,
+                convert_to_numpy=True, normalize_embeddings=True
+            )
+            return embeddings.astype(np.float32)
         from src.evaluation.mteb_wrapper import PersistentEmbeddingCache
         cache = PersistentEmbeddingCache(self.model_name, 256, os.path.join(self.cache_dir, "emb_cache"))
         embs = cache.encode_with_cache(self.model, documents, batch_size=batch_size, max_len_override=256)

@@ -236,7 +236,10 @@ class CodeRetrievalModel:
             trust_remote_code=True,
         )
         self.model.max_seq_length = max_seq_length
-        self.embed_dim = self.model.get_sentence_embedding_dimension()
+        if hasattr(self.model, "get_embedding_dimension"):
+            self.embed_dim = self.model.get_embedding_dimension()
+        else:
+            self.embed_dim = self.model.get_sentence_embedding_dimension()
 
         self.query_instruction = (
             query_instruction if query_instruction is not None else _get_query_instruction(model_name)

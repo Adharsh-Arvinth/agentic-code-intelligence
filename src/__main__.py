@@ -23,6 +23,7 @@ def main():
     index_parser = subparsers.add_parser("index", help="Build indexes for the corpus")
     index_parser.add_argument("--config", type=str, default="configs/default.yaml", help="Config file path")
     index_parser.add_argument("--version", type=str, default="default", help="Version tag for the index")
+    index_parser.add_argument("--device", type=str, default="cpu", help="Device (cpu, cuda, auto)")
     index_parser.add_argument("--force", action="store_true", help="Force rebuild indexes")
 
     # Retrieve command
@@ -33,6 +34,7 @@ def main():
     retrieve_parser.add_argument("--no-rerank", action="store_true", help="Disable reranking")
     retrieve_parser.add_argument("--method", type=str, choices=["semantic", "lexical", "hybrid"],
                                  default="hybrid", help="Retrieval method")
+    retrieve_parser.add_argument("--device", type=str, default="cpu", help="Device (cpu, cuda, auto)")
     retrieve_parser.add_argument("--config", type=str, default="configs/default.yaml", help="Config file")
     retrieve_parser.add_argument("--sample", type=int, default=None, help="Sample N documents for fast execution")
 
@@ -41,6 +43,7 @@ def main():
     eval_parser.add_argument("--experiments", type=str, default="all",
                              choices=["all", "lexical", "semantic", "hybrid", "hybrid_rerank"],
                              help="Which experiments to run")
+    eval_parser.add_argument("--device", type=str, default="cpu", help="Device (cpu, cuda, auto)")
     eval_parser.add_argument("--config", type=str, default="configs/default.yaml", help="Config file")
     eval_parser.add_argument("--output", type=str, default="experiments/", help="Output directory")
     eval_parser.add_argument("--max-queries", type=int, default=None, help="Limit number of queries")
@@ -49,6 +52,7 @@ def main():
     mteb_parser = subparsers.add_parser("mteb_eval", help="Run official MTEB AppsRetrieval evaluation")
     mteb_parser.add_argument("--model", type=str, default=None, help="Override embedding model")
     mteb_parser.add_argument("--batch-size", type=int, default=64, help="Batch size for encoding")
+    mteb_parser.add_argument("--device", type=str, default="cpu", help="Device (cpu, cuda, auto)")
     mteb_parser.add_argument("--output", type=str, default="results/", help="Output directory")
     mteb_parser.add_argument("--config", type=str, default="configs/default.yaml", help="Config file")
 

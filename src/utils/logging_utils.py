@@ -89,23 +89,28 @@ def format_results(
         doc_id = res.get('doc_id', res.get('docid', 'N/A'))
         score = res.get('score', 0.0)
         rank = res.get('rank', idx + 1)
+        version = res.get('version', 'default')
+        metadata = res.get('metadata', {})
         
-        log.info(f"")
-        log.info(f"  Rank {rank} | Doc: {doc_id} | Score: {score:.6f}")
+        log.info("")
+        log.info(f"  Rank {rank} | Doc: {doc_id} | Score: {score:.6f} | Version: {version}")
+        if metadata:
+            log.info(f"  Metadata: {metadata}")
         
-        # Show code snippet if corpus is available
-        if corpus and doc_id in corpus:
+        # Show code snippet if corpus or result['code'] is available
+        code = res.get('code', '')
+        if not code and corpus and doc_id in corpus:
             doc = corpus[doc_id]
             if isinstance(doc, dict):
                 code = doc.get('text', '')
             else:
                 code = str(doc)
-            # Show first 5 lines of code
-            lines = code.split('\n')[:5]
+        if code:
+            lines = code.split('\n')[:6]
             preview = '\n    '.join(lines)
-            if len(code.split('\n')) > 5:
+            if len(code.split('\n')) > 6:
                 preview += '\n    ...'
-            log.info(f"  Code preview:")
+            log.info("  Code preview:")
             log.info(f"    {preview}")
         
         log.info(f"  {'-' * 50}")

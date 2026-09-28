@@ -74,9 +74,9 @@ class IndexManager:
             if isinstance(doc, dict):
                 title = doc.get('title', '').strip()
                 text = doc.get('text', '').strip()
-                doc_texts.append(format_doc_rep_e(text, title=title, max_chars=1200))
+                doc_texts.append(format_doc_rep_e(text, title=title))
             else:
-                doc_texts.append(format_doc_rep_e(str(doc), max_chars=1200))
+                doc_texts.append(format_doc_rep_e(str(doc)))
         return doc_ids, doc_texts
 
     def build_all(self, corpus: Dict[str, Any], version: str = 'default'):

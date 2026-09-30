@@ -27,5 +27,6 @@ experiments/*
 .vscode/
 *.DS_Store
 Thumbs.db
-*.pptx
 ~$*
+*.mp4
+*.MP4

@@ -384,8 +384,8 @@ Full details on AI-assisted development, pretrained models (`BAAI/bge-small-en-v
 ## Hackathon Submission Checklist
 
 - [x] Source Code
-- [ ] Presentation
-- [ ] Demo Video
+- [x] Presentation ([`Samsung_PRISM_Generative_AI_Hackathon_Presentation_Updated.pptx`](Samsung_PRISM_Generative_AI_Hackathon_Presentation_Updated.pptx))
+- [x] Demo Video ([Google Drive Link](https://drive.google.com/file/d/1JQQXUEOY81HSYag60_mDM9-FCE1qdSzh/view?usp=sharing))
 - [x] AI Disclosure ([`AI_DISCLOSURE.md`](AI_DISCLOSURE.md))
 - [x] README ([`README.md`](README.md))
 - [ ] APK/SDK — Not applicable — this project is a Python-based code intelligence/retrieval system.

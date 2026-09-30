@@ -28,5 +28,4 @@ experiments/*
 *.DS_Store
 Thumbs.db
 ~$*
-*.mp4
-*.MP4
+*_backup.mp4

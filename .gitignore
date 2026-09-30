@@ -13,7 +13,8 @@ data/embeddings/
 *.faiss
 model_cache/
 .pytest_cache/
-dist/
+dist/*
+!dist/*.whl
 build/
 *.egg-info/
 results/*

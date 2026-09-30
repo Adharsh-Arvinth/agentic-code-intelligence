@@ -2,7 +2,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![MTEB 2.21.8](https://img.shields.io/badge/Official_MTEB_AppsRetrieval_NDCG%4010-0.25591_(25.59%25)-brightgreen.svg)](#official-mteb-appsretrieval-results)
-[![Unit Tests](https://img.shields.io/badge/pytest-44%2F44_passed-success.svg)](#testing)
+[![Unit Tests](https://img.shields.io/badge/pytest-50%2F50_passed-success.svg)](#testing)
 
 **Agentic Code Intelligence** is a multi-stage natural-language-to-code retrieval engine built for the **CoIR / MTEB `AppsRetrieval`** benchmark (`3,765` natural-language competitive programming problem queries $\to$ `8,765` Python solution snippets), featuring version-aware index management (P1) and zero-GPU CPU execution.
 
@@ -92,6 +92,53 @@ The retrieval system operates in two modes:
 git clone https://github.com/Adharsh-Arvinth/agentic-code-intelligence.git
 cd agentic-code-intelligence
 pip install -r requirements.txt
+```
+
+---
+
+## Python SDK (Software Development Kit)
+
+The repository provides a production-ready Python SDK (`agentic_code_intelligence`) that can be installed directly from source or via the prebuilt wheel package in [`dist/`](dist/agentic_code_intelligence-1.0.0-py3-none-any.whl):
+
+### 1. Install the SDK
+```bash
+# Install via the prebuilt wheel package (offline / standalone)
+pip install dist/agentic_code_intelligence-1.0.0-py3-none-any.whl
+
+# Or install from source in editable mode
+pip install -e .
+```
+
+### 2. Quickstart Python API
+```python
+from agentic_code_intelligence import CodeIntelligenceClient
+
+# Initialize the client (defaults to fast CPU inference)
+client = CodeIntelligenceClient(device="cpu")
+
+# Natural-language semantic code search
+results = client.search(
+    query="Find the shortest path in a weighted graph using Dijkstra algorithm with a priority queue",
+    top_k=3,
+    version="default"
+)
+
+for r in results:
+    print(f"Rank {r.rank} | Doc: {r.doc_id} | Score: {r.score:.4f} | Version: {r.version}")
+    print(r.code)
+
+# AST-guarded sandboxed execution verification
+verification = client.verify_execution(
+    sample_input="4\n",
+    expected_output="16",
+    code_snippet="n = int(input())\nprint(n * n)\n"
+)
+print("Execution Match:", verification)
+```
+
+Run the interactive SDK demo script anytime:
+```bash
+python examples/sdk_quickstart.py
 ```
 
 ---
@@ -337,13 +384,13 @@ Verified CLI queries executed on CPU (`python -m src.retrieve --device cpu --que
 
 ## Testing
 
-Run the full automated `pytest` suite (`44` unit tests across metrics, preprocessing, hybrid fusion, MTEB protocol compliance, and end-to-end version-aware indexing/retrieval):
+Run the full automated `pytest` suite (`50` unit tests across metrics, preprocessing, hybrid fusion, SDK client, MTEB protocol compliance, and end-to-end version-aware indexing/retrieval):
 
 ```bash
 python -m pytest tests/ -v
 ```
 
-Measured test result: **`44 passed` (`100%` pass rate)**.
+Measured test result: **`50 passed` (`100%` pass rate)**.
 
 ---
 
@@ -360,7 +407,7 @@ Measured test result: **`44 passed` (`100%` pass rate)**.
 To reproduce all results from scratch on CPU:
 
 ```bash
-# 1. Run all 44 unit tests
+# 1. Run all 50 unit tests
 python -m pytest tests/ -v
 
 # 2. Build the default corpus index
@@ -388,9 +435,9 @@ Full details on AI-assisted development, pretrained models (`BAAI/bge-small-en-v
 - [x] Demo Video ([`Demo.mp4`](Demo.mp4) in repository | [Google Drive Mirror](https://drive.google.com/file/d/1JQQXUEOY81HSYag60_mDM9-FCE1qdSzh/view?usp=sharing))
 - [x] AI Disclosure ([`AI_DISCLOSURE.md`](AI_DISCLOSURE.md))
 - [x] README ([`README.md`](README.md))
-- [ ] APK/SDK — Not applicable — this project is a Python-based code intelligence/retrieval system.
+- [x] APK/SDK — Python SDK (`agentic_code_intelligence` v1.0.0 wheel & client API in [`dist/`](dist/agentic_code_intelligence-1.0.0-py3-none-any.whl))
 - [x] GitHub repository (`https://github.com/Adharsh-Arvinth/agentic-code-intelligence`)
-- [x] Tests (`44 passed` via `python -m pytest tests/ -v`)
+- [x] Tests (`50 passed` via `python -m pytest tests/ -v`)
 - [x] Evaluation results ([`results/AppsRetrieval.json`](results/AppsRetrieval.json), [`results/benchmark_summary.json`](results/benchmark_summary.json), [`results/model_comparison.json`](results/model_comparison.json), [`results/model_comparison.csv`](results/model_comparison.csv))
 - [x] Example execution (`python -m src.retrieve --device cpu --query "..."`)
 - [x] TAG / release (`v1.0.0`)
